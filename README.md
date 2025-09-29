@@ -1,2 +1,2 @@
-# pwa-template
-Augy Studios PWA sites template
+# newyeartrain-bot
+New Year Train Discord.JS bot
