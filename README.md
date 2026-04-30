@@ -62,6 +62,15 @@ Required intents: **Guilds** only — no privileged intents needed.
 
 ### 4. Run
 
+**Simple (foreground):**
+
+```bash
+source .venv/bin/activate
+python bot.py
+```
+
+**Via tmux (recommended for servers):**
+
 ```bash
 ./start.sh           # start in tmux
 ./start.sh stop      # kill session
