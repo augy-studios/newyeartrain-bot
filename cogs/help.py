@@ -68,7 +68,7 @@ class HelpCog(commands.Cog):
     @app_commands.command(name="help", description="List all New Year Train commands.")
     async def help(self, interaction: discord.Interaction):
         view = HelpView(page=0)
-        await interaction.response.send_message(embed=PAGES[0], view=view, ephemeral=True)
+        await interaction.response.send_message(embed=PAGES[0], view=view, ephemeral=False)
 
 
 async def setup(bot: commands.Bot):
