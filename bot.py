@@ -27,9 +27,9 @@ COGS = ["cogs.train", "cogs.admin", "cogs.help"]
 async def update_presence():
     count = len(bot.guilds)
     await bot.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.listening,
-            name=f"the New Year choo choo in {count} guild{'s' if count != 1 else ''}"
+        activity=discord.Streaming(
+            name=f"the New Year choo choo in {count} guild{'s' if count != 1 else ''}",
+            url="https://www.twitch.tv/placeholder"
         )
     )
 
