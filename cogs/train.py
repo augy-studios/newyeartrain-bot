@@ -25,7 +25,7 @@ from utils.db import (
     is_stop_enabled, set_stop_enabled, set_stop_range_enabled,
     get_disabled_stops, reset_stop_overrides,
     has_delivered, mark_delivered, count_delivered, get_stop,
-    get_all_jobs_for_year, jobs_exist_for_year
+    get_all_jobs_for_year, jobs_exist_for_year, bookends_exist_for_year
 )
 from utils.stops_data import (
     build_schedule_for_year, seed_stops,
@@ -117,8 +117,8 @@ class TrainCog(commands.Cog):
         seed_stops()
 
         for year in self._target_years(now):
-            if not jobs_exist_for_year(year):
-                build_schedule_for_year(year)
+            if not jobs_exist_for_year(year) or not bookends_exist_for_year(year):
+                build_schedule_for_year(year, force=True)
 
         active_guilds = get_all_active_guilds()
         for guild_row in active_guilds:

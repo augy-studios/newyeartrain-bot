@@ -111,6 +111,17 @@ def jobs_exist_for_year(year: int) -> bool:
     return row["cnt"] > 0
 
 
+def bookends_exist_for_year(year: int) -> bool:
+    """Return True only if both pre_train and post_train jobs exist for year."""
+    with get_conn() as conn:
+        row = conn.execute(
+            """SELECT COUNT(*) as cnt FROM scheduled_jobs
+               WHERE year = ? AND job_type IN ('pre_train', 'post_train')""",
+            (year,)
+        ).fetchone()
+    return row["cnt"] == 2
+
+
 def get_all_jobs_for_year(year: int) -> list[sqlite3.Row]:
     """All jobs for a year joined with stop data, ordered by fire time."""
     with get_conn() as conn:
