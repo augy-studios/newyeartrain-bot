@@ -367,6 +367,11 @@ class TrainCog(commands.Cog):
         upcoming_year = now.year + 1 if now.month >= 11 else now.year
         jobs = get_all_jobs_for_year(upcoming_year)
 
+        # If every job this year is already delivered, show next year instead
+        if jobs and all(has_delivered(gid, j["id"]) for j in jobs):
+            upcoming_year += 1
+            jobs = get_all_jobs_for_year(upcoming_year)
+
         lines = []
         count = 0
         for j in jobs:
