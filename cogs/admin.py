@@ -1,11 +1,11 @@
 """
 cogs/admin.py — Admin/maintenance slash commands.
 
-/train_rebuild  — force-rebuild global schedule for a year
-/train_reset    — clear delivery log for a guild+year (testing)
-/train_sendnow  — immediately fire a specific job to this guild's channel
-/train_dbinfo   — database stats
-/train_guilds   — list all registered guilds
+/rebuild  — force-rebuild global schedule for a year
+/reset    — clear delivery log for a guild+year (testing)
+/sendnow  — immediately fire a specific job to this guild's channel
+/dbinfo   — database stats
+/guilds   — list all registered guilds
 """
 
 import discord
@@ -31,14 +31,14 @@ class AdminCog(commands.Cog):
         self.bot = bot
 
     # ------------------------------------------------------------------
-    # /train_rebuild
+    # /rebuild
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_rebuild",
+    @app_commands.command(name="rebuild",
                           description="Force-rebuild the global schedule for a given year.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to rebuild (e.g. 2027)")
-    async def train_rebuild(self, interaction: discord.Interaction, year: int):
+    async def rebuild(self, interaction: discord.Interaction, year: int):
         await interaction.response.defer(ephemeral=True)
         seed_stops()
         build_schedule_for_year(year, force=True)
@@ -46,14 +46,14 @@ class AdminCog(commands.Cog):
         log.info(f"[guild={interaction.guild_id}] Rebuild {year} by {interaction.user}")
 
     # ------------------------------------------------------------------
-    # /train_reset  — clear delivery log for this guild+year
+    # /reset  — clear delivery log for this guild+year
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_reset",
+    @app_commands.command(name="reset",
                           description="Reset sent history for this server (for testing).")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to reset delivery log for")
-    async def train_reset(self, interaction: discord.Interaction, year: int):
+    async def reset(self, interaction: discord.Interaction, year: int):
         gid = interaction.guild_id
         reset_delivery_log(gid, year)
         await interaction.response.send_message(
@@ -63,17 +63,17 @@ class AdminCog(commands.Cog):
         log.warning(f"[guild={gid}] Delivery log reset for {year} by {interaction.user}")
 
     # ------------------------------------------------------------------
-    # /train_sendnow  — manually fire a job to this guild's channel
+    # /sendnow  — manually fire a job to this guild's channel
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_sendnow",
+    @app_commands.command(name="sendnow",
                           description="Immediately send a specific job to this server's channel.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         year="Target year",
         job_type="e.g. pre_train  |  stop_11  |  post_train"
     )
-    async def train_sendnow(self, interaction: discord.Interaction, year: int, job_type: str):
+    async def sendnow(self, interaction: discord.Interaction, year: int, job_type: str):
         await interaction.response.defer(ephemeral=True)
         gid = interaction.guild_id
         cfg = get_guild_config(gid)
@@ -110,13 +110,13 @@ class AdminCog(commands.Cog):
         log.info(f"[guild={gid}] Manual send: {job_type} ({year}) by {interaction.user}")
 
     # ------------------------------------------------------------------
-    # /train_dbinfo
+    # /dbinfo
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_dbinfo",
+    @app_commands.command(name="dbinfo",
                           description="Show database statistics.")
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def train_dbinfo(self, interaction: discord.Interaction):
+    async def dbinfo(self, interaction: discord.Interaction):
         from utils.db import get_conn
         with get_conn() as conn:
             stops    = conn.execute("SELECT COUNT(*) as c FROM train_stops").fetchone()["c"]
@@ -138,13 +138,13 @@ class AdminCog(commands.Cog):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ------------------------------------------------------------------
-    # /train_guilds
+    # /guilds
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_guilds",
+    @app_commands.command(name="guilds",
                           description="List all guilds registered with the bot.")
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def train_guilds(self, interaction: discord.Interaction):
+    async def guilds(self, interaction: discord.Interaction):
         guilds = get_all_guilds()
         if not guilds:
             await interaction.response.send_message("No guilds registered yet.", ephemeral=True)

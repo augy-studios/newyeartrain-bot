@@ -88,9 +88,9 @@ On first run, the DB is created, all 38 stops are seeded, and schedules for the 
 After inviting the bot, a server admin runs two commands:
 
 ```bash
-/train_setup #channel       — set posting channel and enable the bot
-/train_toggle enabled:False — pause without changing channel
-/train_setchannel #channel  — update channel later
+/setup #channel       — set posting channel and enable the bot
+/toggle enabled:False — pause without changing channel
+/setchannel #channel  — update channel later
 ```
 
 ---
@@ -109,10 +109,10 @@ The `stops` argument accepts a comma-separated mix of:
 | `post_train` | Post-train farewell |
 
 ```bash
-/train_stops action:disable stops:all_stops
-/train_stops action:enable  stops:stop_11,stop_24
-/train_stops action:disable stops:stop_1-stop_10,stop_30-stop_38
-/train_stops action:enable  stops:all
+/stops action:disable stops:all_stops
+/stops action:enable  stops:stop_11,stop_24
+/stops action:disable stops:stop_1-stop_10,stop_30-stop_38
+/stops action:enable  stops:all
 ```
 
 Disabled stops are silently skipped by the scheduler — they won't fire for that guild. The global schedule is unaffected (other guilds still receive those stops normally).
@@ -125,18 +125,18 @@ All commands require **Manage Channels**.
 
 | Command | Description |
 | --- | --- |
-| `/train_setup #channel` | Enable bot + set channel |
-| `/train_toggle enabled` | Pause/resume the whole train |
-| `/train_setchannel #channel` | Change posting channel |
-| `/train_stops action stops` | Enable/disable specific stops |
-| `/train_status` | Show current config + progress |
-| `/train_schedule` | List upcoming fire times |
-| `/train_preview stop` | Preview a message (0=pre, 1–38=stop, 39=post) |
-| `/train_rebuild year` | Force-rebuild global schedule |
-| `/train_reset year` | Clear delivery log for this server+year (testing) |
-| `/train_sendnow year job_type` | Immediately send a job to this server's channel |
-| `/train_dbinfo` | Database stats |
-| `/train_guilds` | List all registered servers |
+| `/setup #channel` | Enable bot + set channel |
+| `/toggle enabled` | Pause/resume the whole train |
+| `/setchannel #channel` | Change posting channel |
+| `/stops action stops` | Enable/disable specific stops |
+| `/status` | Show current config + progress |
+| `/schedule` | List upcoming fire times |
+| `/preview stop` | Preview a message (0=pre, 1–38=stop, 39=post) |
+| `/rebuild year` | Force-rebuild global schedule |
+| `/reset year` | Clear delivery log for this server+year (testing) |
+| `/sendnow year job_type` | Immediately send a job to this server's channel |
+| `/dbinfo` | Database stats |
+| `/guilds` | List all registered servers |
 
 ---
 
@@ -178,10 +178,10 @@ git pull
 ## Testing
 
 ```bash
-/train_reset 2026          # re-arm all jobs for your guild
-/train_sendnow 2026 pre_train           # fire pre-train message now
-/train_sendnow 2026 stop_11             # fire Singapore's stop now
-/train_preview 11                       # preview without sending
-/train_stops action:disable stops:all  # silence everything
-/train_stops action:enable  stops:all  # re-enable everything
+/reset 2026          # re-arm all jobs for your guild
+/sendnow 2026 pre_train           # fire pre-train message now
+/sendnow 2026 stop_11             # fire Singapore's stop now
+/preview 11                       # preview without sending
+/stops action:disable stops:all  # silence everything
+/stops action:enable  stops:all  # re-enable everything
 ```

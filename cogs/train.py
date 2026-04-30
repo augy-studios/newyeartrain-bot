@@ -151,13 +151,13 @@ class TrainCog(commands.Cog):
                     # don't mark delivered; will retry next tick
 
     # ------------------------------------------------------------------
-    # /train_setup  — setchannel + enable in one command
+    # /setup  — setchannel + enable in one command
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_setup", description="Set up the New Year Train for this server.")
+    @app_commands.command(name="setup", description="Set up the New Year Train for this server.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(channel="Channel to post New Year messages in")
-    async def train_setup(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    async def setup(self, interaction: discord.Interaction, channel: discord.TextChannel):
         gid = interaction.guild_id
         ensure_guild(gid)
         set_guild_channel(gid, channel.id)
@@ -165,19 +165,19 @@ class TrainCog(commands.Cog):
         self._channel_cache.pop(gid, None)  # bust cache
         await interaction.response.send_message(
             f"✅ New Year Train is **enabled** and will post to {channel.mention}.\n"
-            f"Use `/train_toggle` to pause it at any time.",
+            f"Use `/toggle` to pause it at any time.",
             ephemeral=True
         )
         log.info(f"[guild={gid}] Setup: channel={channel.id}")
 
     # ------------------------------------------------------------------
-    # /train_toggle  — on/off for the whole guild
+    # /toggle  — on/off for the whole guild
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_toggle", description="Enable or disable the New Year Train for this server.")
+    @app_commands.command(name="toggle", description="Enable or disable the New Year Train for this server.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(enabled="True to enable, False to disable")
-    async def train_toggle(self, interaction: discord.Interaction, enabled: bool):
+    async def toggle(self, interaction: discord.Interaction, enabled: bool):
         gid = interaction.guild_id
         ensure_guild(gid)
         set_guild_enabled(gid, enabled)
@@ -188,13 +188,13 @@ class TrainCog(commands.Cog):
         log.info(f"[guild={gid}] Toggled enabled={enabled}")
 
     # ------------------------------------------------------------------
-    # /train_setchannel  — change channel without touching enabled state
+    # /setchannel  — change channel without touching enabled state
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_setchannel", description="Change the posting channel (without changing enabled state).")
+    @app_commands.command(name="setchannel", description="Change the posting channel (without changing enabled state).")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(channel="New channel to post in")
-    async def train_setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         gid = interaction.guild_id
         ensure_guild(gid)
         set_guild_channel(gid, channel.id)
@@ -204,10 +204,10 @@ class TrainCog(commands.Cog):
         )
 
     # ------------------------------------------------------------------
-    # /train_stops  — enable/disable individual stops or ranges
+    # /stops  — enable/disable individual stops or ranges
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_stops",
+    @app_commands.command(name="stops",
                           description="Enable or disable specific stops (or ranges) for this server.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
@@ -222,7 +222,7 @@ class TrainCog(commands.Cog):
             "  all_stops        — stops 1-38 only (keeps pre/post)\n"
         )
     )
-    async def train_stops(self, interaction: discord.Interaction,
+    async def stops(self, interaction: discord.Interaction,
                           action: str, stops: str):
         action = action.strip().lower()
         if action not in ("enable", "disable"):
@@ -297,19 +297,19 @@ class TrainCog(commands.Cog):
         await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
     # ------------------------------------------------------------------
-    # /train_status
+    # /status
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_status", description="Show New Year Train status for this server.")
+    @app_commands.command(name="status", description="Show New Year Train status for this server.")
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def train_status(self, interaction: discord.Interaction):
+    async def status(self, interaction: discord.Interaction):
         gid = interaction.guild_id
         cfg = get_guild_config(gid)
         now = datetime.now(timezone.utc)
 
         if not cfg:
             await interaction.response.send_message(
-                "This server hasn't been set up yet. Use `/train_setup` to get started.", ephemeral=True
+                "This server hasn't been set up yet. Use `/setup` to get started.", ephemeral=True
             )
             return
 
@@ -354,13 +354,13 @@ class TrainCog(commands.Cog):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ------------------------------------------------------------------
-    # /train_schedule  — list upcoming fire times for this guild
+    # /schedule  — list upcoming fire times for this guild
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_schedule",
+    @app_commands.command(name="schedule",
                           description="List upcoming fire times for the New Year Train.")
     @app_commands.checks.has_permissions(manage_channels=True)
-    async def train_schedule(self, interaction: discord.Interaction):
+    async def schedule(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         gid = interaction.guild_id
         now = datetime.now(timezone.utc)
@@ -400,14 +400,14 @@ class TrainCog(commands.Cog):
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     # ------------------------------------------------------------------
-    # /train_preview
+    # /preview
     # ------------------------------------------------------------------
 
-    @app_commands.command(name="train_preview",
+    @app_commands.command(name="preview",
                           description="Preview a train message without sending it to the channel.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(stop="0=pre_train, 1–38=stop number, 39=post_train")
-    async def train_preview(self, interaction: discord.Interaction, stop: int):
+    async def preview(self, interaction: discord.Interaction, stop: int):
         now = datetime.now(timezone.utc)
         year = now.year + 1 if now.month >= 11 else now.year
 
