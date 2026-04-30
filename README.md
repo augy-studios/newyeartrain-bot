@@ -40,8 +40,8 @@ new-year-train/
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/new-year-train.git
-cd new-year-train
+git clone https://github.com/YOUR_USERNAME/newyeartrain-bot.git
+cd newyeartrain-bot
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
