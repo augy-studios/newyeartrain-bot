@@ -31,6 +31,29 @@ class AdminCog(commands.Cog):
         self.bot = bot
 
     # ------------------------------------------------------------------
+    # Autocomplete helpers
+    # ------------------------------------------------------------------
+
+    async def _year_autocomplete(
+        self, _interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[int]]:
+        now = datetime.now(timezone.utc)
+        years = [now.year, now.year + 1]
+        return [
+            app_commands.Choice(name=str(y), value=y)
+            for y in years if current in str(y)
+        ]
+
+    async def _job_type_autocomplete(
+        self, _interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        types = ["pre_train"] + [f"stop_{n}" for n in range(1, 39)] + ["post_train"]
+        return [
+            app_commands.Choice(name=t, value=t)
+            for t in types if current.lower() in t.lower()
+        ][:25]
+
+    # ------------------------------------------------------------------
     # /rebuild
     # ------------------------------------------------------------------
 
@@ -38,6 +61,7 @@ class AdminCog(commands.Cog):
                           description="Force-rebuild the global schedule for a given year.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to rebuild (e.g. 2027)")
+    @app_commands.autocomplete(year=_year_autocomplete)
     async def rebuild(self, interaction: discord.Interaction, year: int):
         await interaction.response.defer(ephemeral=True)
         seed_stops()
@@ -53,6 +77,7 @@ class AdminCog(commands.Cog):
                           description="Reset sent history for this server (for testing).")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to reset delivery log for")
+    @app_commands.autocomplete(year=_year_autocomplete)
     async def reset(self, interaction: discord.Interaction, year: int):
         gid = interaction.guild_id
         reset_delivery_log(gid, year)
@@ -73,6 +98,7 @@ class AdminCog(commands.Cog):
         year="Target year",
         job_type="e.g. pre_train  |  stop_11  |  post_train"
     )
+    @app_commands.autocomplete(year=_year_autocomplete, job_type=_job_type_autocomplete)
     async def sendnow(self, interaction: discord.Interaction, year: int, job_type: str):
         await interaction.response.defer(ephemeral=True)
         gid = interaction.guild_id

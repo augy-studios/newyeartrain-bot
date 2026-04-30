@@ -38,6 +38,31 @@ log = logging.getLogger("new_year_train.train")
 MAX_LATE_SECONDS = 180  # skip if bot was down >3 min past fire time
 
 
+class ScheduleView(discord.ui.View):
+    def __init__(self, make_embed, total: int):
+        super().__init__(timeout=120)
+        self.make_embed = make_embed
+        self.total = total
+        self.page = 0
+        self._update_buttons()
+
+    def _update_buttons(self):
+        self.prev_button.disabled = self.page == 0
+        self.next_button.disabled = self.page == self.total - 1
+
+    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary)
+    async def prev_button(self, interaction: discord.Interaction, _button: discord.ui.Button):
+        self.page -= 1
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.make_embed(self.page), view=self)
+
+    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary)
+    async def next_button(self, interaction: discord.Interaction, _button: discord.ui.Button):
+        self.page += 1
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.make_embed(self.page), view=self)
+
+
 class TrainCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -204,6 +229,31 @@ class TrainCog(commands.Cog):
         )
 
     # ------------------------------------------------------------------
+    # Autocomplete helpers
+    # ------------------------------------------------------------------
+
+    async def _stops_tokens_autocomplete(
+        self, _interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        tokens = ["all", "all_stops", "pre_train", "post_train"] + [f"stop_{n}" for n in range(1, 39)]
+        return [
+            app_commands.Choice(name=t, value=t)
+            for t in tokens if current.lower() in t.lower()
+        ][:25]
+
+    async def _preview_stop_autocomplete(
+        self, _interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[int]]:
+        from utils.db import get_all_stops
+        all_stops = get_all_stops()
+        choices = (
+            [app_commands.Choice(name="0 — Pre-train", value=0)]
+            + [app_commands.Choice(name=f"{s['stop_number']} — {s['stop_label']}", value=s['stop_number']) for s in all_stops]
+            + [app_commands.Choice(name="39 — Post-train", value=39)]
+        )
+        return [c for c in choices if current in c.name][:25]
+
+    # ------------------------------------------------------------------
     # /stops  — enable/disable individual stops or ranges
     # ------------------------------------------------------------------
 
@@ -212,25 +262,15 @@ class TrainCog(commands.Cog):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         action="enable or disable",
-        stops=(
-            "Comma-separated stop keys or ranges. Examples:\n"
-            "  stop_11          — single stop\n"
-            "  stop_1-stop_10   — range\n"
-            "  pre_train        — pre-train message\n"
-            "  post_train       — post-train message\n"
-            "  all              — every stop + pre/post\n"
-            "  all_stops        — stops 1-38 only (keeps pre/post)\n"
-        )
+        stops="Stop key or range (e.g. all, all_stops, stop_11, stop_1-stop_10, pre_train, post_train)"
     )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="enable", value="enable"),
+        app_commands.Choice(name="disable", value="disable"),
+    ])
+    @app_commands.autocomplete(stops=_stops_tokens_autocomplete)
     async def stops(self, interaction: discord.Interaction,
                           action: str, stops: str):
-        action = action.strip().lower()
-        if action not in ("enable", "disable"):
-            await interaction.response.send_message(
-                "❌ `action` must be `enable` or `disable`.", ephemeral=True
-            )
-            return
-
         enabled = (action == "enable")
         gid = interaction.guild_id
         ensure_guild(gid)
@@ -373,31 +413,34 @@ class TrainCog(commands.Cog):
             jobs = get_all_jobs_for_year(upcoming_year)
 
         lines = []
-        count = 0
         for j in jobs:
             if has_delivered(gid, j["id"]):
                 continue
             fire = datetime.fromisoformat(j["fire_utc"]).replace(tzinfo=timezone.utc)
-            enabled_marker = "" if is_stop_enabled(gid, j["job_type"]) else " *(skipped)*"
+            marker = "" if is_stop_enabled(gid, j["job_type"]) else " *(skipped)*"
             ts_date = discord.utils.format_dt(fire, "d")
             ts_time = discord.utils.format_dt(fire, "t")
-            lines.append(f"`{j['job_type']:20}` {ts_date} {ts_time}{enabled_marker}")
-            count += 1
-            if count >= 20:
-                lines.append(f"… and {len(jobs)-count} more")
-                break
+            lines.append(f"`{j['job_type']:20}` {ts_date} {ts_time}{marker}")
 
         if not lines:
             await interaction.followup.send("No pending jobs.", ephemeral=True)
             return
 
-        embed = discord.Embed(
-            title=f"🚂 {upcoming_year} Pending Schedule",
-            description="\n".join(lines),
-            colour=0x00aaff
-        )
-        embed.set_footer(text="*(skipped)* = disabled for this server")
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        page_size = 15
+        pages = [lines[i:i + page_size] for i in range(0, len(lines), page_size)]
+        total = len(pages)
+
+        def make_embed(page: int) -> discord.Embed:
+            e = discord.Embed(
+                title=f"🚂 {upcoming_year} Pending Schedule",
+                description="\n".join(pages[page]),
+                colour=0x00aaff
+            )
+            e.set_footer(text=f"Page {page + 1}/{total} · *(skipped)* = disabled for this server")
+            return e
+
+        view = ScheduleView(make_embed, total)
+        await interaction.followup.send(embed=make_embed(0), view=view, ephemeral=True)
 
     # ------------------------------------------------------------------
     # /preview
@@ -407,6 +450,7 @@ class TrainCog(commands.Cog):
                           description="Preview a train message without sending it to the channel.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(stop="0=pre_train, 1–38=stop number, 39=post_train")
+    @app_commands.autocomplete(stop=_preview_stop_autocomplete)
     async def preview(self, interaction: discord.Interaction, stop: int):
         now = datetime.now(timezone.utc)
         year = now.year + 1 if now.month >= 11 else now.year
