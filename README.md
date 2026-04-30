@@ -121,7 +121,7 @@ Disabled stops are silently skipped by the scheduler — they won't fire for tha
 
 ## Slash Command Reference
 
-### Per-server (requires Manage Guild)
+### Per-server (requires Manage Channels)
 
 | Command | Description |
 | --- | --- |
@@ -133,7 +133,7 @@ Disabled stops are silently skipped by the scheduler — they won't fire for tha
 | `/train_schedule` | List upcoming fire times |
 | `/train_preview stop` | Preview a message (0=pre, 1–38=stop, 39=post) |
 
-### Admin (requires Administrator)
+### Admin (requires Manage Channels)
 
 | Command | Description |
 | --- | --- |

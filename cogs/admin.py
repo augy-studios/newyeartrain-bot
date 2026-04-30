@@ -36,7 +36,7 @@ class AdminCog(commands.Cog):
 
     @app_commands.command(name="train_rebuild",
                           description="[Admin] Force-rebuild the global schedule for a given year.")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to rebuild (e.g. 2027)")
     async def train_rebuild(self, interaction: discord.Interaction, year: int):
         await interaction.response.defer(ephemeral=True)
@@ -51,7 +51,7 @@ class AdminCog(commands.Cog):
 
     @app_commands.command(name="train_reset",
                           description="[Admin] Reset sent history for this server (for testing).")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to reset delivery log for")
     async def train_reset(self, interaction: discord.Interaction, year: int):
         gid = interaction.guild_id
@@ -68,7 +68,7 @@ class AdminCog(commands.Cog):
 
     @app_commands.command(name="train_sendnow",
                           description="[Admin] Immediately send a specific job to this server's channel.")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         year="Target year",
         job_type="e.g. pre_train  |  stop_11  |  post_train"
@@ -115,7 +115,7 @@ class AdminCog(commands.Cog):
 
     @app_commands.command(name="train_dbinfo",
                           description="[Admin] Show database statistics.")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(manage_channels=True)
     async def train_dbinfo(self, interaction: discord.Interaction):
         from utils.db import get_conn
         with get_conn() as conn:
