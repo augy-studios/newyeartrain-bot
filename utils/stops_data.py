@@ -157,7 +157,7 @@ def build_schedule_for_year(year: int, force: bool = False):
     stops = get_all_stops()
     first_fire = compute_fire_utc(year, stops[0]["utc_offset_mins"])
     last_fire  = compute_fire_utc(year, stops[-1]["utc_offset_mins"])
-    upsert_scheduled_job(year, "pre_train",  (first_fire - timedelta(minutes=5)).isoformat(), None)
+    upsert_scheduled_job(year, "pre_train",  (first_fire - timedelta(hours=1)).isoformat(), None)
     for stop in stops:
         fire = compute_fire_utc(year, stop["utc_offset_mins"])
         upsert_scheduled_job(year, f"stop_{stop['stop_number']}", fire.isoformat(), stop["stop_number"])
