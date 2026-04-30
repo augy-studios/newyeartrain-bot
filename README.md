@@ -121,7 +121,7 @@ Disabled stops are silently skipped by the scheduler — they won't fire for tha
 
 ## Slash Command Reference
 
-### Per-server (requires Manage Channels)
+All commands require **Manage Channels**.
 
 | Command | Description |
 | --- | --- |
@@ -132,20 +132,10 @@ Disabled stops are silently skipped by the scheduler — they won't fire for tha
 | `/train_status` | Show current config + progress |
 | `/train_schedule` | List upcoming fire times |
 | `/train_preview stop` | Preview a message (0=pre, 1–38=stop, 39=post) |
-
-### Admin (requires Manage Channels)
-
-| Command | Description |
-| --- | --- |
 | `/train_rebuild year` | Force-rebuild global schedule |
 | `/train_reset year` | Clear delivery log for this server+year (testing) |
 | `/train_sendnow year job_type` | Immediately send a job to this server's channel |
 | `/train_dbinfo` | Database stats |
-
-### Owner only
-
-| Command | Description |
-| --- | --- |
 | `/train_guilds` | List all registered servers |
 
 ---

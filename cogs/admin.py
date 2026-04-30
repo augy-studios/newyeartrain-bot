@@ -5,7 +5,7 @@ cogs/admin.py — Admin/maintenance slash commands.
 /train_reset    — clear delivery log for a guild+year (testing)
 /train_sendnow  — immediately fire a specific job to this guild's channel
 /train_dbinfo   — database stats
-/train_guilds   — [owner only] list all registered guilds
+/train_guilds   — list all registered guilds
 """
 
 import discord
@@ -35,7 +35,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @app_commands.command(name="train_rebuild",
-                          description="[Admin] Force-rebuild the global schedule for a given year.")
+                          description="Force-rebuild the global schedule for a given year.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to rebuild (e.g. 2027)")
     async def train_rebuild(self, interaction: discord.Interaction, year: int):
@@ -50,7 +50,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @app_commands.command(name="train_reset",
-                          description="[Admin] Reset sent history for this server (for testing).")
+                          description="Reset sent history for this server (for testing).")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(year="Year to reset delivery log for")
     async def train_reset(self, interaction: discord.Interaction, year: int):
@@ -67,7 +67,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @app_commands.command(name="train_sendnow",
-                          description="[Admin] Immediately send a specific job to this server's channel.")
+                          description="Immediately send a specific job to this server's channel.")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         year="Target year",
@@ -114,7 +114,7 @@ class AdminCog(commands.Cog):
     # ------------------------------------------------------------------
 
     @app_commands.command(name="train_dbinfo",
-                          description="[Admin] Show database statistics.")
+                          description="Show database statistics.")
     @app_commands.checks.has_permissions(manage_channels=True)
     async def train_dbinfo(self, interaction: discord.Interaction):
         from utils.db import get_conn
@@ -138,16 +138,13 @@ class AdminCog(commands.Cog):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ------------------------------------------------------------------
-    # /train_guilds  — bot owner only
+    # /train_guilds
     # ------------------------------------------------------------------
 
     @app_commands.command(name="train_guilds",
-                          description="[Owner] List all guilds registered with the bot.")
+                          description="List all guilds registered with the bot.")
+    @app_commands.checks.has_permissions(manage_channels=True)
     async def train_guilds(self, interaction: discord.Interaction):
-        if interaction.user.id != self.bot.owner_id:
-            await interaction.response.send_message("❌ Owner only.", ephemeral=True)
-            return
-
         guilds = get_all_guilds()
         if not guilds:
             await interaction.response.send_message("No guilds registered yet.", ephemeral=True)
