@@ -24,6 +24,16 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 COGS = ["cogs.train", "cogs.admin", "cogs.help"]
 
 
+async def update_presence():
+    count = len(bot.guilds)
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.listening,
+            name=f"the New Year choo choo in {count} guild{'s' if count != 1 else ''}"
+        )
+    )
+
+
 @bot.event
 async def on_ready():
     log.info(f"Logged in as {bot.user} ({bot.user.id})")
@@ -33,19 +43,21 @@ async def on_ready():
         log.info(f"Synced {len(synced)} slash command(s)")
     except Exception as e:
         log.error(f"Failed to sync commands: {e}")
+    await update_presence()
 
 
 @bot.event
 async def on_guild_join(guild: discord.Guild):
-    """Auto-register the guild in the DB when the bot is added."""
     from utils.db import ensure_guild
     ensure_guild(guild.id)
     log.info(f"Joined guild: {guild.name} ({guild.id})")
+    await update_presence()
 
 
 @bot.event
 async def on_guild_remove(guild: discord.Guild):
     log.info(f"Removed from guild: {guild.name} ({guild.id})")
+    await update_presence()
 
 
 async def main():
