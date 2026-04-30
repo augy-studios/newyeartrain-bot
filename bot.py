@@ -21,7 +21,7 @@ intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-COGS = ["cogs.train", "cogs.admin"]
+COGS = ["cogs.train", "cogs.admin", "cogs.help"]
 
 
 @bot.event
