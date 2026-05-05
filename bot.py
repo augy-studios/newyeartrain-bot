@@ -40,6 +40,7 @@ async def on_ready():
     log.info(f"Serving {len(bot.guilds)} guild(s)")
     try:
         synced = await bot.tree.sync()
+        bot.command_ids = {cmd.name: cmd.id for cmd in synced}
         log.info(f"Synced {len(synced)} slash command(s)")
     except Exception as e:
         log.error(f"Failed to sync commands: {e}")
